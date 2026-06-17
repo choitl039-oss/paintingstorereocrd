@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jennifer Store Keeping</title>
+    <meta
+      name="description"
+      content="Inventory and sales tracker for painting stock."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="ambient ambient-left"></div>
+      <div class="ambient ambient-right"></div>
+
+      <header class="hero-card">
+        <div>
+          <p class="eyebrow" id="brand-label">Jennifer Store Keeping</p>
+          <h1 id="page-title">Painting inventory and sales tracker</h1>
+          <p class="hero-copy" id="hero-copy">
+            Add each painting with its image, quantity, and price. Staff can record sales,
+            and the system keeps live stock records plus an Excel export for reporting.
+          </p>
+        </div>
+
+        <div class="hero-actions">
+          <label class="language-picker" for="language-select">
+            <span id="language-label">Language</span>
+            <select id="language-select" aria-label="Language selector">
+              <option value="en">English</option>
+              <option value="zh-Hans">简体中文</option>
+              <option value="zh-Hant">繁體中文</option>
+            </select>
+          </label>
+
+          <div class="segmented-control" role="tablist" aria-label="Role selector">
+            <button class="active" id="staff-view-button" type="button">Staff view</button>
+            <button id="admin-view-button" type="button">Admin view</button>
+          </div>
+
+          <button class="ghost-button" id="export-button" type="button">Export Excel report</button>
+        </div>
+      </header>
+
+      <section class="setup-card warning-card" id="setup-card" hidden>
+        <h2 id="setup-title">Supabase setup is still required</h2>
+        <p id="setup-copy">
+          Open supabase-config.js and add your Supabase URL and anon key. GitHub Pages can host
+          the website, while Supabase keeps the shared stock and sales data online for you and your staff.
+        </p>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card">
+          <span id="total-cash-label">Total cash received</span>
+          <strong id="total-cash">$0.00</strong>
+        </article>
+        <article class="stat-card">
+          <span id="total-units-label">Total units sold</span>
+          <strong id="sold-units">0</strong>
+        </article>
+        <article class="stat-card">
+          <span id="inventory-value-label">Current inventory value</span>
+          <strong id="inventory-value">$0.00</strong>
+        </article>
+        <article class="stat-card">
+          <span id="paintings-listed-label">Paintings listed</span>
+          <strong id="painting-count">0</strong>
+        </article>
+      </section>
+
+      <div class="status-banner" id="status-banner" hidden></div>
+      <div class="error-banner" id="error-banner" hidden></div>
+
+      <section class="admin-layout" id="admin-layout" hidden>
+        <article class="panel-card lock-card" id="admin-lock-card">
+          <div>
+            <h2 id="unlock-title">Unlock admin tools</h2>
+            <p id="unlock-copy">Use your admin PIN before adding stock or changing quantities.</p>
+          </div>
+          <div class="inline-form">
+            <input id="admin-pin-input" type="password" placeholder="Enter admin PIN" />
+            <button id="unlock-admin-button" type="button">Unlock</button>
+          </div>
+        </article>
+
+        <div id="admin-tools" hidden>
+          <article class="panel-card form-card">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow" id="admin-eyebrow">Admin</p>
+                <h2 id="add-title">Add a new painting</h2>
+              </div>
+            </div>
+
+            <form class="inventory-form" id="inventory-form">
+              <div class="form-full-width">
+                <div class="upload-dropzone" id="upload-dropzone" tabindex="0" role="button" aria-label="Upload painting image">
+                  <input id="painting-image" type="file" accept="image/*" hidden />
+                  <div class="upload-dropzone-copy">
+                    <strong id="upload-title">Drag and drop the painting photo here</strong>
+                    <span id="upload-subtitle">or click to choose the image file</span>
+                  </div>
+                  <img id="upload-preview-image" class="upload-preview-image" alt="Painting preview" hidden />
+                  <p id="upload-file-name" class="upload-file-name">No image selected yet.</p>
+                </div>
+              </div>
+
+              <label>
+                <span id="painting-name-label">Painting name</span>
+                <input id="painting-name" type="text" placeholder="Sunset over the lake" />
+              </label>
+
+              <label>
+                <span id="price-label">Price</span>
+                <input id="painting-price" type="number" min="0" step="0.01" placeholder="1200" />
+              </label>
+
+              <label>
+                <span id="quantity-label">Quantity</span>
+                <input id="painting-quantity" type="number" min="0" step="1" placeholder="3" />
+              </label>
+
+              <button id="save-painting-button" type="submit">Save painting</button>
+            </form>
+          </article>
+
+          <article class="panel-card">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow" id="inventory-eyebrow">Inventory</p>
+                <h2 id="update-title">Update painting details</h2>
+              </div>
+            </div>
+            <div class="card-grid" id="admin-card-grid"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="staff-layout" id="staff-layout">
+        <article class="panel-card staff-toolbar">
+          <div>
+            <p class="eyebrow" id="staff-eyebrow">Staff</p>
+            <h2 id="staff-title">Record a sale</h2>
+          </div>
+          <label class="staff-name-field">
+            <span id="staff-name-label">Staff name</span>
+            <input id="staff-name" type="text" placeholder="Optional" />
+          </label>
+        </article>
+
+        <div class="card-grid" id="staff-card-grid"></div>
+      </section>
+
+      <section class="panel-card sales-log">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow" id="records-eyebrow">Records</p>
+            <h2 id="recent-sales-title">Recent sales</h2>
+          </div>
+        </div>
+
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th id="table-painting">Painting</th>
+                <th id="table-quantity-sold">Quantity sold</th>
+                <th id="table-cash-received">Cash received</th>
+                <th id="table-actions">Actions</th>
+                <th id="table-staff">Staff</th>
+                <th id="table-sold-at">Sold at</th>
+              </tr>
+            </thead>
+            <tbody id="sales-table-body">
+              <tr>
+                <td colspan="5">No sales have been recorded yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
